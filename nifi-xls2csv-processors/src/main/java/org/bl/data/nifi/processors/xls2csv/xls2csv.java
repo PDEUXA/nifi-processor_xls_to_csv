@@ -26,6 +26,7 @@ import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.SeeAlso;
 import org.apache.nifi.annotation.documentation.Tags;
+import org.apache.nifi.flowfile.attributes.CoreAttributes;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
@@ -231,5 +232,7 @@ public class xls2csv extends AbstractProcessor {
         });
         String filename = flowFile.getAttribute("filename") + ".csv";
         flowFile = session.putAttribute(flowFile, "filename", filename);
+        flowFile = session.putAttribute(flowFile, CoreAttributes.MIME_TYPE.key(), "text/csv");
+
     }
 }
