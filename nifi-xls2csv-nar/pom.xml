@@ -19,11 +19,11 @@
     <parent>
         <groupId>org.bl.data.nifi</groupId>
         <artifactId>XLS2CSV</artifactId>
-        <version>0.49-SNAPSHOT</version>
+        <version>0.52-SNAPSHOT</version>
     </parent>
 
     <artifactId>nifi-xls2csv-nar</artifactId>
-    <version>0.49-SNAPSHOT</version>
+    <version>0.52-SNAPSHOT</version>
     <packaging>nar</packaging>
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.bl.data.nifi</groupId>
             <artifactId>nifi-xls2csv-processors</artifactId>
-            <version>0.49-SNAPSHOT</version>
+            <version>0.52-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

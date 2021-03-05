@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.bl.data.nifi</groupId>
         <artifactId>XLS2CSV</artifactId>
-        <version>0.49-SNAPSHOT</version>
+        <version>0.52-SNAPSHOT</version>
     </parent>
 
     <artifactId>nifi-xls2csv-processors</artifactId>

@@ -43,6 +43,7 @@ import java.nio.charset.*;
 
 import org.apache.poi.EmptyFileException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.NumberToTextConverter;
 
 import java.io.IOException;
 import java.util.*;
@@ -50,8 +51,8 @@ import java.util.*;
 @Tags({"excel,csv"})
 @CapabilityDescription("Convert a single sheet excel document into a csv")
 @SeeAlso({})
-@ReadsAttributes({@ReadsAttribute(attribute="", description="")})
-@WritesAttributes({@WritesAttribute(attribute="sheetname", description="Name of the converted sheet.")})
+@ReadsAttributes({@ReadsAttribute(attribute = "", description = "")})
+@WritesAttributes({@WritesAttribute(attribute = "sheetname", description = "Name of the converted sheet.")})
 
 public class xls2csv extends AbstractProcessor {
 
@@ -98,18 +99,26 @@ public class xls2csv extends AbstractProcessor {
             .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
             .build();
 
-    public static final Relationship REL_SUCCESS  = new Relationship.Builder()
+    public static final PropertyDescriptor CSV_SEPARATOR = new PropertyDescriptor
+            .Builder().name("CSV_SEPARATOR")
+            .displayName("Separator used in the output CSV file")
+            .description("Separator used in the output CSV file")
+            .required(false)
+            .defaultValue(",")
+            .build();
+
+    public static final Relationship REL_SUCCESS = new Relationship.Builder()
             .name("Success")
             .description("Conversion successful")
             .build();
 
 
-    public static final Relationship REL_FAILURE  = new Relationship.Builder()
+    public static final Relationship REL_FAILURE = new Relationship.Builder()
             .name("Failure")
             .description("Conversion failed")
             .build();
 
-    public static final Relationship REL_ORIGNE  = new Relationship.Builder()
+    public static final Relationship REL_ORIGNE = new Relationship.Builder()
             .name("Origine")
             .description("Original Flowfile")
             .build();
@@ -126,6 +135,7 @@ public class xls2csv extends AbstractProcessor {
         descriptors.add(COLUMN_OFFSET);
         descriptors.add(ROW_OFFSET);
         descriptors.add(ALL_SHEET);
+        descriptors.add(CSV_SEPARATOR);
 
         this.descriptors = Collections.unmodifiableList(descriptors);
 
@@ -162,8 +172,9 @@ public class xls2csv extends AbstractProcessor {
         int rowNum = context.getProperty(ROW_OFFSET).asInteger();
         int colNum = context.getProperty(COLUMN_OFFSET).asInteger();
         int sheetNumber = context.getProperty(SHEET_NUMBER).asInteger();
-
-        session.read(flowFile,  new InputStreamCallback() {
+        String csvSeparator = context.getProperty(CSV_SEPARATOR).getValue();
+        ;
+        session.read(flowFile, new InputStreamCallback() {
             @Override
             public void process(InputStream inputStream) throws IOException {
                 Workbook wb = WorkbookFactory.create(inputStream);
@@ -173,7 +184,7 @@ public class xls2csv extends AbstractProcessor {
                         FlowFile ff = session.create(flowFile);
                         String sheetName = wb.getSheetAt(i).getSheetName();
                         try {
-                            handleExcelSheet(session, ff, wb, i, rowNum, colNum);
+                            handleExcelSheet(session, ff, wb, i, rowNum, colNum, csvSeparator);
                             session.putAttribute(ff, SHEET_NAME, sheetName);
                             session.transfer(ff, REL_SUCCESS);
 
@@ -186,7 +197,7 @@ public class xls2csv extends AbstractProcessor {
                     FlowFile ff = session.create(flowFile);
                     String sheetName = wb.getSheetAt(sheetNumber).getSheetName();
                     try {
-                        handleExcelSheet(session, ff, wb,  sheetNumber, rowNum, colNum);
+                        handleExcelSheet(session, ff, wb, sheetNumber, rowNum, colNum, csvSeparator);
                         session.putAttribute(ff, SHEET_NAME, sheetName);
                         session.transfer(ff, REL_SUCCESS);
                     } catch (IOException e) {
@@ -195,18 +206,19 @@ public class xls2csv extends AbstractProcessor {
                     }
                 }
             }
-            });
+        });
         session.transfer(flowFile, REL_ORIGNE);
-        }
+    }
+
     private void handleExcelSheet(ProcessSession session, FlowFile flowFile, Workbook wb,
-                                  final int sheetNumber, final int rowOffset, final int colOffset) throws IOException {
+                                  final int sheetNumber, final int rowOffset, final int colOffset, final String csvSeparator) throws IOException {
         flowFile = session.write(flowFile, new OutputStreamCallback() {
             @Override
             public void process(OutputStream outputStream) throws IOException {
                 Sheet mySheet = wb.getSheetAt(sheetNumber);
                 StringBuilder record = new StringBuilder();
                 Iterator<Row> rowIter = mySheet.rowIterator();
-                for (int i = 0; i < rowOffset-1; i++) {
+                for (int i = 0; i < rowOffset - 1; i++) {
                     if (rowIter.hasNext()) {
                         rowIter.next();
                     }
@@ -217,9 +229,11 @@ public class xls2csv extends AbstractProcessor {
                     Row nextRow = rowIter.next();
                     int lastCell = nextRow.getLastCellNum();
                     for (int i = colOffset; i < lastCell; i++) {
-                        record.append(nextRow.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK));
-                        if (i!=lastCell-1) {
-                            record.append(",");
+                        DataFormatter dataFormatter = new DataFormatter();
+                        String value = dataFormatter.formatCellValue(nextRow.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK));
+                        record.append(value);
+                        if (i != lastCell - 1) {
+                            record.append(csvSeparator);
                         }
                     }
                     if (isRow) {
