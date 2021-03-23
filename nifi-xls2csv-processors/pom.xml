@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.bl.data.nifi</groupId>
         <artifactId>XLS2CSV</artifactId>
-        <version>0.52-SNAPSHOT</version>
+        <version>0.54-SNAPSHOT</version>
     </parent>
 
     <artifactId>nifi-xls2csv-processors</artifactId>
@@ -55,6 +55,11 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>4.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.6</version>
         </dependency>
     </dependencies>
 </project>

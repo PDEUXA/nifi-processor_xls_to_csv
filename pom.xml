@@ -24,7 +24,7 @@
 
     <groupId>org.bl.data.nifi</groupId>
     <artifactId>XLS2CSV</artifactId>
-    <version>0.52-SNAPSHOT</version>
+    <version>0.54-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>

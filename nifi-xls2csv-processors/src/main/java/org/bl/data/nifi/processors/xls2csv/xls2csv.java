@@ -16,7 +16,10 @@
  */
 package org.bl.data.nifi.processors.xls2csv;
 
+
+
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
@@ -41,9 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.*;
 
-import org.apache.poi.EmptyFileException;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.NumberToTextConverter;
 
 import java.io.IOException;
 import java.util.*;
@@ -103,8 +104,9 @@ public class xls2csv extends AbstractProcessor {
             .Builder().name("CSV_SEPARATOR")
             .displayName("Separator used in the output CSV file")
             .description("Separator used in the output CSV file")
-            .required(false)
+            .required(true)
             .defaultValue(",")
+            .allowableValues(",",";","\t")
             .build();
 
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -237,6 +239,11 @@ public class xls2csv extends AbstractProcessor {
                         }
                     }
                     if (isRow) {
+                        for (int index = 0; index < record.length(); index++) {
+                            if (record.charAt(index) == '\n') {
+                                record.setCharAt(index, ' ');
+                            }
+                        }
                         record = new StringBuilder(record + "\n");
                         outputStream.write(record.toString().getBytes(StandardCharsets.UTF_8));
                     }
@@ -250,3 +257,5 @@ public class xls2csv extends AbstractProcessor {
 
     }
 }
+
+
