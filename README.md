@@ -6,4 +6,4 @@ Convert a xls file to a csv,
 + Blank and empty cells will not be eluded.
 + Sheets will be splitted in individual flowfiles
 + Row and columns offsets can be set
-+ Process could be done on one sheet only
++ Process could be done on one sheet only 
